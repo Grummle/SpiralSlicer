@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommandLine;
+using CommandLine.Text;
 
 namespace HelixCoordinates
 {
@@ -18,13 +19,13 @@ namespace HelixCoordinates
             [Option('s', "StartOffset", HelpText = "Amount of object that will be skipped starting at 0")]
             public double StartOffset { get; set; }
 
-            [Option('g', "segments", Default = 20000, HelpText = "How many line segments should be used")]
+            [Option('g', "segments", Default = 500, HelpText = "How many line segments should be used")]
             public double Segemnts { get; set; }
 
             [Option('v', "verbose", Required = false, HelpText = "Set output to verbose messages.")]
             public bool Verbose { get; set; }
 
-            [Option('p', "speed", Default = 3600, HelpText = "Speed in mm per min")]
+            [Option('p', "speed", Default = 1900, HelpText = "Speed in mm per min")]
             public double Speed { get; set; }
 
             [Option('w', "linewidth", Default = .42, HelpText = "Width of the extrsion")]
@@ -35,5 +36,17 @@ namespace HelixCoordinates
             public string TemplatePath { get; set; }
             [Option('f',"FirstLayer",Default=true,HelpText = "Print the first layer flat, varing the layer height")]
             public bool FlatFirstLayer { get; set; }
+
+            [Option('x',"xtransform",HelpText = "How many mm to transform the object on the x axis after slicing")]
+            public double XTransform { get; set; }
+
+            [Option('y',"ytransform",HelpText = "How many mm to transform the object on the y axis after slicing")]
+            public double YTransform { get; set; }
+
+            [Option('m',"modelpath",HelpText = "Path to model to slice.", Required = true)]
+            public string ModelPath { get; set; }
+
+            [Option('r',"relative-extrusion",HelpText = "Should extrusion lengths be relative")]
+            public bool IsRelativeExtrusion { get; set; }
         }
 }

@@ -23,19 +23,20 @@ namespace HelixCoordinates
         {
             var builder = new DMesh3Builder();
             var reader = new StandardMeshReader {MeshBuilder = builder};
-            var result = reader.Read(@"C:\Users\Dillon\Downloads\troll.small.centered.stl", ReadOptions.Defaults);
+            var result = reader.Read(opts.ModelPath, ReadOptions.Defaults);
             List<DMesh3> meshes = null;
             if (result.code == IOCode.Ok) meshes = builder.Meshes;
             var spatial = new DMeshAABBTree3(meshes.First());
             spatial.Build();
 
-            var points = new List<V3D>();
+            List<V3D> points = new List<V3D>();
 
             var r = 500;
             var c = 0.031;
+            var increment = 2 * Math.PI / opts.Segemnts;
 
             IntrRay3Triangle3 strucktriangle = null;
-            for (double t = 0; t < 200000; t = t + .1)
+            for (double t = 0; t < 200000; t = t + increment)
             {
                 var castRay = new Ray3d(new Vector3d(0, 0, c * t),
                     new Vector3d(r * Math.Cos(t), r * Math.Sin(t), c * t));
@@ -59,8 +60,13 @@ namespace HelixCoordinates
 
                 var intersectionPoint = V3D.IntersectPoint(rv, rp, pn, pp);
                 intersectionPoint.z = c * t;
+                var movedintersection = new V3D(
+intersectionPoint.x - castRay.Direction.Normalized.x*(opts.Width/2),
+intersectionPoint.y - castRay.Direction.Normalized.y*(opts.Width/2),
+intersectionPoint.z
+                    );
 
-                points.Add(intersectionPoint);
+                points.Add(movedintersection);
             }
 
 
@@ -68,13 +74,23 @@ namespace HelixCoordinates
             var sb2 = new StringBuilder();
             double extrusionTotal = 0;
             sb2.Append($"G1 F{opts.Speed}\n");
+            if (opts.StartOffset > 0)
+            {
+                points = points.Where(x => x.z >= opts.StartOffset).ToList();
+
+            }
+
+            if (opts.IsRelativeExtrusion)
+            {
+                sb2.AppendLine("M83");
+            }
             for (var i = 1; i < points.Count; i++)
             {
                 var extrusionArea = (opts.Width - opts.LayerHeight)*opts.LayerHeight + Math.PI * Math.Pow(opts.LayerHeight/2,2);
                 if (opts.FlatFirstLayer)
                 { 
-                    var t = (points[i].z / c);
-                    if (t < 2 * Math.PI )
+                    var t = (points[i].z / c)-(points[0].z / c);
+                    if (t < 2 * Math.PI)
                     {
                         var additional = (t /( 2 * Math.PI)) * opts.LayerHeight;
                         var moarbigger = opts.LayerHeight + additional;
@@ -86,7 +102,7 @@ namespace HelixCoordinates
                 var distance = Math.Sqrt(Math.Pow(pp.x - p.x, 2) + Math.Pow(pp.y - p.y, 2) + Math.Pow(pp.z - p.z, 2));
                 var extrusion = (distance * extrusionArea) / FilamentArea;
                 extrusionTotal = extrusionTotal + extrusion;
-                var o = $"G1 X{p.x + 80} Y{p.y + 70} Z{p.z+opts.LayerHeight} E{extrusion} ;{distance}\n ";
+                var o = $"G1 X{p.x + opts.XTransform} Y{p.y + opts.YTransform} Z{p.z+opts.LayerHeight} E{extrusion} ;{extrusion}/{distance}={extrusion/distance}\n ";
                 sb2.Append(o);
             }
 
