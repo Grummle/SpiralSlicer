@@ -4,6 +4,9 @@ Slicer that does a true spiral cut of an stl
 # Problem
 All of the slicers that I've been able to find do vase/spiral mode by doing layer cuts then transitioning between those layers in a big x,y jump. This leaves an artifact on vase
 mode prints when the line width or layer difference is great enough.
+![vaseseam](https://user-images.githubusercontent.com/407186/150284916-4a314755-61eb-4bb9-a27f-19d559c72fcd.png)
+![IMG_4361](https://user-images.githubusercontent.com/407186/150285011-6db856f6-a893-4bb9-8e23-d5aca644e7ee.jpg)
+
 
 # Hack
 I wrote (horribly) a slicer that uses a helix in the middle of an stl object to produce rays whose intersection with the walls of the stl to produce a true spiral slice.
@@ -66,5 +69,6 @@ PS gcode viewer to figure out which line you need to cut it off at.
 
   -r, --relative-extrusion    Should extrusion lengths be relative
 ```
+
 
 
